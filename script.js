@@ -36,14 +36,16 @@ const PROFILE = {
       title: "Undergraduate Research Assistant",
       logo: "assets/viplab-logo.png",
       meta: "Vision and Image Processing Lab, UWaterloo · Sep 2026 – Present",
+      note: "Reinforcement learning for humanoid tennis, supervised by Dr. Yuhao Chen",
       bullets: [
-        "Researching ==reinforcement learning== for _humanoid sports control_ ({y:tennis}) with **Prof. Yuhao Chen**, applying simulation-based training and reward design.",
+        "Researching ==reinforcement learning== for _humanoid sports control_ ({y:tennis}) with **Dr. Yuhao Chen**, applying simulation-based training and reward design.",
       ],
     },
     {
       title: "AI Algorithm Engineer Intern",
       logo: "assets/qubot-logo.png",
       meta: "Qubot Technology · Shanghai · May 2026 – Aug 2026",
+      note: "Physics simulation and reinforcement learning",
       bullets: [
         "Framed autonomous instrument navigation as an ==RL problem== in a custom Gymnasium env, training **PPO agents** (PyTorch, Stable-Baselines3) in {p:NVIDIA Isaac Sim}.",
         "Diagnosed a _value-function collapse_ and fixed it with **reward engineering**, **curriculum learning**, and Optuna hyperparameter search.",
@@ -417,7 +419,7 @@ function renderItems(items, { bullets = true, yellowDates = false } = {}) {
       <div class="item-body">
       <div class="item-title">${it.link ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.title)}</a>` : esc(it.title)}</div>
       ${it.meta ? `<div class="item-meta">${yellowDates ? fmt(it.meta).replace(DATE_AT_END, '<span class="item-date">$1</span>') : fmt(it.meta)}</div>` : ""}
-      ${it.note ? `<div class="item-note">${fmt(it.note)}</div>` : ""}
+      ${[].concat(it.note || []).map((n) => `<div class="item-note">${fmt(n)}</div>`).join("")}
       ${bullets ? (it.bullets || []).map((b) => `<div class="bullet">${fmt(b)}</div>`).join("") : ""}
       ${it.tags ? `<div class="tags">${it.tags.map((t) => `<span class="tag">${fmt(t)}</span>`).join("")}</div>` : ""}
       ${it.footnote ? `<div class="item-footnote">${fmt(it.footnote)}</div>` : ""}
