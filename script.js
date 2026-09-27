@@ -133,6 +133,9 @@ const PROFILE = {
         { name: "Beijing",              country: "China",  lat: 39.90, lon: 116.40 },
         { name: "Xi'an",                country: "China",  lat: 34.34, lon: 108.94 },
         { name: "Shanghai",             country: "China",  lat: 31.23, lon: 121.47 },
+        { name: "Suzhou",               country: "China",  lat: 31.30, lon: 120.58 },
+        { name: "Hangzhou",             country: "China",  lat: 30.27, lon: 120.16 },
+        { name: "Nanjing",              country: "China",  lat: 32.06, lon: 118.80 },
         { name: "Yunnan",               country: "China",  lat: 25.04, lon: 102.71 }, // Kunming
         { name: "Guangzhou",            country: "China",  lat: 23.13, lon: 113.26 },
         { name: "Hong Kong",   lat: 22.32, lon: 114.17 },
@@ -154,7 +157,7 @@ const PROFILE = {
       ],
       items: [
         { title: "Canada & USA", meta: "", bullets: ["{y:Toronto} _(home)_, Montreal, Quebec City, Vancouver, New York, Burlington (Vermont), Orlando, Miami", "The Maritimes: New Brunswick, Nova Scotia, Prince Edward Island"] },
-        { title: "East Asia", meta: "", bullets: ["Beijing, Xi'an, Shanghai, Yunnan, Guangzhou, Hong Kong, South Korea, Japan", "_Summer 2026:_ interned at **Qubot** in {y:Shanghai}"] },
+        { title: "East Asia", meta: "", bullets: ["Beijing, Xi'an, Shanghai, Suzhou, Hangzhou, Nanjing, Yunnan, Guangzhou, Hong Kong, South Korea, Japan", "_Summer 2026:_ interned at **Qubot** in {y:Shanghai}"] },
         { title: "Europe", meta: "", bullets: ["France, Belgium, the Netherlands, Luxembourg, Germany"] },
         { title: "Africa", meta: "", bullets: ["Egypt"] },
         { title: "On my wishlist ✈️", meta: "", bullets: ["{c:Iceland}, {c:Norway}, {c:Italy}, {c:Türkiye}, the {c:Amazon Rainforest} and, one day, {c:Antarctica}."] },
@@ -706,18 +709,6 @@ lightbox.addEventListener("touchend", (e) => {
 });
 
 // ---------- dotted world map ----------
-// Group places closer than `radius` grid cells (single-link), so crowded regions share one label.
-function clusterPins(pins, radius) {
-  const parent = pins.map((_, i) => i);
-  const find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])));
-  for (let i = 0; i < pins.length; i++)
-    for (let j = i + 1; j < pins.length; j++)
-      if (Math.hypot(pins[i].c - pins[j].c, pins[i].r - pins[j].r) < radius) parent[find(i)] = find(j);
-  const groups = {};
-  pins.forEach((p, i) => (groups[find(i)] ||= []).push(p));
-  return Object.values(groups).map((members) => members.sort((a, b) => a.r - b.r)); // north first
-}
-
 function drawMaps() {
   document.querySelectorAll("canvas.worldmap:not([data-drawn])").forEach((canvas) => {
     canvas.dataset.drawn = "1";
@@ -774,25 +765,19 @@ function drawMaps() {
           if (data[r][c] !== "0") n++;
       return n;
     };
-    const clusters = clusterPins(pins, 3.8).sort((a, b) => b.length - a.length); // crowded groups pick first
-    // one label per cluster; inside it, each country is a heading with its places indented below
+    // one label per country, showing just the country name (every city still gets its own star;
+    // the detailed places are listed below the map)
+    const byCountry = new Map();
+    for (const p of pins) {
+      const c = p.country || p.name;
+      if (!byCountry.has(c)) byCountry.set(c, []);
+      byCountry.get(c).push(p);
+    }
+    const clusters = [...byCountry.values()].sort((a, b) => b.length - a.length); // countries with more stars pick first
     const countryFont = `700 ${fontSize}px ${font}`, placeFont = `400 ${fontSize}px ${font}`;
     const placeColor = getComputedStyle(document.documentElement).getPropertyValue("--fg").trim() || "#c0caf5";
     const indent = fontSize * 0.9;
-    const labelLines = (members) => {
-      const groups = new Map();
-      for (const m of members) {
-        const c = m.country || m.name;
-        if (!groups.has(c)) groups.set(c, { wish: !!m.wish, names: [] });
-        if (m.country) groups.get(c).names.push(m.name);
-      }
-      const lines = [];
-      for (const [c, g] of groups) {
-        lines.push({ text: c, country: true, wish: g.wish });
-        for (const n of g.names) lines.push({ text: n, country: false, wish: g.wish });
-      }
-      return lines;
-    };
+    const labelLines = (members) => [{ text: members[0].country || members[0].name, country: true, wish: !!members[0].wish }];
     const widthOf = (l) => { ctx.font = l.country ? countryFont : placeFont; return ctx.measureText(l.text).width + (l.country ? 0 : indent); };
     const labels = clusters.map((members) => {
       const ax = members.reduce((s, m) => s + m.x, 0) / members.length;
