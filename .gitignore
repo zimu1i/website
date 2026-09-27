@@ -1,0 +1,10 @@
+# private: the original portrait photo (the site only uses the dot data in portrait.js)
+assets/photo.jpg
+
+# generated previews
+tools/preview.png
+tools/worldmap-preview.png
+
+# local editor / tool settings
+.claude/
+.DS_Store
