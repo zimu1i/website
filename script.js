@@ -253,9 +253,13 @@ const EXTRAS = {
   whoami: () => `<p class="line">${esc(PROFILE.username)}</p>`,
   date:   () => `<p class="line">${esc(new Date().toString())}</p>`,
   ls:     () => {
-    const kids = cwd.length === 0 ? Object.keys(COMMANDS).filter((c) => !NOT_DIRS.includes(c))
-      : cwd.length === 1 && cwd[0] === "passion" ? Object.keys(PROFILE.passion) : [];
-    return kids.length ? `<p class="line">${kids.map((k) => `<span class="accent clickable" data-cmd="cd ${esc(pathString([...cwd, k]))}">${esc(k)}/</span>`).join("  ")}</p>` : "";
+    const kids = childrenOf(cwd);
+    if (!kids.length) {
+      return `<p class="line">There's nothing inside <span class="path">${esc(pathString())}</span>. It's a page, not a folder.</p>
+        <p class="line hint">Type <span class="accent clickable" data-cmd="prev">prev</span> to go back one directory, or <span class="accent clickable" data-cmd="help">help</span> to see everything.</p>`;
+    }
+    return `<p class="line">${kids.map((k) => `<span class="accent clickable" data-cmd="cd ${esc(pathString([...cwd, k]))}">${esc(k)}/</span>`).join("  ")}</p>
+      <p class="line hint">Type a name (or click it) to open it.</p>`;
   },
   pwd:    () => `<p class="line">${esc(pathString())}</p>`,
   cd:     (args) => cd(args[0]),
@@ -274,7 +278,7 @@ function help() {
     : `<p class="line hint" style="margin-top:1.2rem">Type one of the above to view. For eg. <span class="accent clickable" data-cmd="about">about</span></p>`;
   return `${rows}${where}
     <p class="line hint">Type <span class="accent clickable" data-cmd="prev">prev</span> to go back one directory, or <span class="accent clickable" data-cmd="clear">clear</span> to clear the terminal.</p>
-    <p class="line hint">Press <span class="accent">Tab</span> to autocomplete.</p>`;
+    <p class="line hint">Type <span class="accent clickable" data-cmd="ls">ls</span> to see what's in the current directory, and press <span class="accent">Tab</span> to autocomplete.</p>`;
 }
 
 // Tiny markup for profile text (escaped first, so it's safe):
@@ -941,6 +945,57 @@ function homeOf(key) {
   return null;
 }
 
+// words newcomers often try, mapped to what they mean here
+const ALIASES = {
+  back: "prev", "..": "prev", "cd..": "cd ..", up: "prev",
+  home: "cd ~", "~": "cd ~",
+  menu: "help", start: "help", "?": "help", h: "help", man: "help", commands: "help", info: "help",
+  cls: "clear", dir: "ls", list: "ls", where: "pwd",
+};
+const OPEN_WORDS = ["open", "cat", "go", "view", "show", "more", "less", "vim", "nano"];
+const FRIENDLY = {
+  hi: greet, hello: greet, hey: greet, hola: greet, bonjour: greet, "你好": greet,
+  exit: bye, quit: bye, logout: bye, bye: bye, q: bye, ":q": bye,
+};
+function greet() {
+  return `<p class="line">Hi there! 👋 Thanks for stopping by.</p>
+    <p class="line hint">Type <span class="accent clickable" data-cmd="help">help</span> to look around, or <span class="accent clickable" data-cmd="cd ~/about">about</span> to meet me.</p>`;
+}
+function bye() {
+  return `<p class="line">There's no exit here, but you can close the tab anytime. Thanks for visiting! ✦</p>
+    <p class="line hint">Or type <span class="accent clickable" data-cmd="home">home</span> to start over.</p>`;
+}
+
+// how many single-letter edits turn a into b (for "did you mean")
+function editDistance(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+        i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1] ? d[i - 2][j - 2] + 1 : Infinity);  // swapped letters
+  return d[a.length][b.length];
+}
+
+function notFound(name, here) {
+  const typed = name.toLowerCase();
+  const sections = [...Object.keys(COMMANDS).filter((c) => !NOT_DIRS.includes(c)), ...Object.keys(PROFILE.passion)];
+  const options = [...new Set([...here, ...GLOBAL_CMDS, "ls", "pwd", "cd", ...sections])];
+  let best = null, bestD = Infinity;
+  for (const o of options) {
+    const dist = editDistance(typed, o);
+    if (dist < bestD) { best = o; bestD = dist; }
+  }
+  const close = best && bestD <= Math.max(1, Math.min(2, Math.floor(best.length / 3)));
+  if (close) {
+    // run it directly if it's reachable from here, otherwise jump to where it lives
+    const cmd = here.includes(best) || !homeOf(best) ? best : `cd ${pathString(homeOf(best))}`;
+    return `<p class="line"><span class="error">command not found:</span> ${esc(name)}. Did you mean <span class="accent clickable" data-cmd="${esc(cmd)}">${esc(best)}</span>?</p>`;
+  }
+  return `<p class="line"><span class="error">command not found:</span> ${esc(name)}</p>
+    <p class="line hint">Type <span class="accent clickable" data-cmd="help">help</span> to see what you can do, or <span class="accent clickable" data-cmd="ls">ls</span> to see what's here.</p>`;
+}
+
 function notHere(key) {
   const where = pathString(homeOf(key));
   return `<p class="line"><span class="error">${esc(key)}: not in this directory.</span> You're in <span class="path">${esc(pathString())}</span>, and ${esc(key)} lives in <span class="path">${esc(where)}</span>.</p>
@@ -965,7 +1020,10 @@ function prev() {
 function cd(target = "~") {
   const t = target.toLowerCase().replace(/\/+$/, "") || "~";
   const segs = resolvePath(t === "/" ? "~" : t);
-  if (!segs) return `<p class="line"><span class="error">cd: no such directory:</span> ${esc(target)}</p>`;
+  if (!segs) {
+    return `<p class="line"><span class="error">cd: no such directory:</span> ${esc(target)}</p>
+      <p class="line hint">Type <span class="accent clickable" data-cmd="ls">ls</span> to see what's here, or <span class="accent clickable" data-cmd="help">help</span> to see everything.</p>`;
+  }
   setCwd(segs);
   return renderDir(segs);
 }
@@ -986,16 +1044,24 @@ function execute(raw) {
   historyIndex = history.length;
   if (!cmdLine) return;
 
-  const [name, ...args] = cmdLine.split(/\s+/);
-  const key = name.toLowerCase();
+  let [name, ...args] = cmdLine.split(/\s+/);
+  let key = name.toLowerCase().replace(/(.)\/+$/, "$1");      // "about/" works like "about"
+  // friendly aliases for people who don't live in a terminal
+  if (ALIASES[key]) [key, ...args] = [...ALIASES[key].split(" "), ...args];
+  // "open about", "cat about", "go travel": open it as if the name was typed
+  if (OPEN_WORDS.includes(key) && args[0]) [key, ...args] = [args[0].toLowerCase().replace(/(.)\/+$/, "$1"), ...args.slice(1)];
+  // a path on its own ("passion/travel", "~/about", "../skills") is a cd
+  if (key.includes("/") && key !== "cd") [key, args] = ["cd", [key]];
+
   let html, opened = false;
   const here = childrenOf(cwd);
-  if (GLOBAL_CMDS.includes(key)) html = COMMANDS[key].run(args);
+  if (FRIENDLY[key]) html = FRIENDLY[key]();
+  else if (GLOBAL_CMDS.includes(key)) html = COMMANDS[key].run(args);
   else if (EXTRAS[key]) html = EXTRAS[key](args);
   else if (key === "passion" && args[0] && here.includes("passion")) html = cd(`passion/${args[0]}`);   // `passion travel` shorthand
   else if (here.includes(key)) { setCwd([...cwd, key]); html = renderDir(cwd); opened = true; }
   else if (homeOf(key)) html = notHere(key);   // a real section, just not in this directory
-  else html = `<p class="line"><span class="error">command not found:</span> ${esc(name)}. Type <span class="accent clickable" data-cmd="help">help</span> to see available commands.</p>`;
+  else html = notFound(name, here);
 
   // every section page ends with a reminder of how to get back (home shows it in `help`)
   if (html && cwd.length > 0 && (opened || key === "prev" || key === "cd" || key === "passion") && !/class="error"/.test(html)) {
