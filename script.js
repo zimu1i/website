@@ -419,7 +419,7 @@ function renderItems(items, { bullets = true, yellowDates = false } = {}) {
       <div class="item-body">
       <div class="item-title">${it.link ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.title)}</a>` : esc(it.title)}</div>
       ${it.meta ? `<div class="item-meta">${yellowDates ? fmt(it.meta).replace(DATE_AT_END, '<span class="item-date">$1</span>') : fmt(it.meta)}</div>` : ""}
-      ${[].concat(it.note || []).map((n) => `<div class="item-note">${fmt(n)}</div>`).join("")}
+      ${[].concat(it.note || []).map((n) => `<div class="bullet item-note">${fmt(n)}</div>`).join("")}
       ${bullets ? (it.bullets || []).map((b) => `<div class="bullet">${fmt(b)}</div>`).join("") : ""}
       ${it.tags ? `<div class="tags">${it.tags.map((t) => `<span class="tag">${fmt(t)}</span>`).join("")}</div>` : ""}
       ${it.footnote ? `<div class="item-footnote">${fmt(it.footnote)}</div>` : ""}
