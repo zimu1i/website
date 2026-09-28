@@ -123,7 +123,7 @@ const PROFILE = {
       places: [
         { name: "Vancouver",            country: "Canada", lat: 49.28, lon: -123.12 },
         { name: "Toronto",              country: "Canada", lat: 43.65, lon: -79.38 },
-        { name: "Montreal",             country: "Canada", lat: 45.50, lon: -73.57 },
+        { name: "Montréal",             country: "Canada", lat: 45.50, lon: -73.57 },
         { name: "Quebec City",          country: "Canada", lat: 46.81, lon: -71.21 },
         { name: "New Brunswick",        country: "Canada", lat: 45.96, lon: -66.64 }, // Fredericton
         { name: "Nova Scotia",          country: "Canada", lat: 44.65, lon: -63.57 }, // Halifax
@@ -147,7 +147,8 @@ const PROFILE = {
         { name: "Germany",     lat: 52.52, lon: 13.40 },  // Berlin
         { name: "Belgium",     lat: 50.85, lon: 4.35 },   // Brussels
         { name: "Luxembourg",  lat: 49.61, lon: 6.13 },
-        { name: "France",      lat: 48.86, lon: 2.35 },   // Paris
+        { name: "Paris",       country: "France", lat: 48.86, lon: 2.35 },
+        { name: "Toulouse",    country: "France", lat: 43.60, lon: 1.44 },
         { name: "Egypt",       lat: 30.04, lon: 31.24 },  // Cairo
         // wishlist: places I want to visit (drawn in cyan)
         { name: "Iceland",    wish: true, lat: 64.15, lon: -21.94 },  // Reykjavík
@@ -158,10 +159,19 @@ const PROFILE = {
         { name: "Amazon Rainforest", wish: true, lat: -3.40, lon: -62.20 }, // heart of the Amazon, Brazil
       ],
       items: [
-        { title: "Canada & USA", meta: "", bullets: ["{y:Toronto} _(home)_, Montreal, Quebec City, Vancouver, New York, Burlington (Vermont), Orlando, Miami", "The Maritimes: New Brunswick, Nova Scotia, Prince Edward Island"] },
-        { title: "East Asia", meta: "", bullets: ["Beijing, Xi'an, Shanghai, Suzhou, Hangzhou, Nanjing, Yunnan, Guangzhou, Hong Kong, South Korea, Japan", "_Summer 2026:_ interned at **Qubot** in {y:Shanghai}"] },
-        { title: "Europe", meta: "", bullets: ["France, Belgium, the Netherlands, Luxembourg, Germany"] },
-        { title: "Africa", meta: "", bullets: ["Egypt"] },
+        { title: "North America", meta: "", bullets: [
+          "**Canada** ({y:Toronto}, Montréal, Quebec City, Vancouver, New Brunswick, Nova Scotia, Prince Edward Island)",
+          "**USA** (New York, Burlington, Orlando, Miami)",
+        ] },
+        { title: "East Asia", meta: "", bullets: [
+          "**China** (Beijing, Xi'an, {y:Shanghai}, Suzhou, Hangzhou, Nanjing, Yunnan, Guangzhou)",
+          "**Hong Kong**, **South Korea**, **Japan**",
+        ] },
+        { title: "Europe", meta: "", bullets: [
+          "**France** (Paris, Toulouse)",
+          "**Belgium**, **the Netherlands**, **Luxembourg**, **Germany**",
+        ] },
+        { title: "Africa", meta: "", bullets: ["**Egypt**"] },
         { title: "On my wishlist ✈️", meta: "", bullets: ["{c:Iceland}, {c:Norway}, {c:Italy}, {c:Türkiye}, the {c:Amazon Rainforest} and, one day, {c:Antarctica}."] },
       ],
     },
