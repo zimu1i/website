@@ -336,8 +336,8 @@ a:hover { color: var(--purple); }
 .kw-c { color: var(--cyan); }
 
 /* instructions (help, passion list, page footers): quieter than the content */
-.hint { color: #626a92; font-size: 0.88em; }
-.hint .accent { color: #7f9cc4; }
+.hint { color: #50577d; font-size: 0.82em; letter-spacing: 0.01em; }
+.hint .accent { color: #66749c; }
 .hint .accent:hover { color: var(--cyan); }
 .nav-hint { margin-top: 1rem; }
 

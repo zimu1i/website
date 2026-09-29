@@ -256,10 +256,10 @@ const EXTRAS = {
     const kids = childrenOf(cwd);
     if (!kids.length) {
       return `<p class="line">There's nothing inside <span class="path">${esc(pathString())}</span>. It's a page, not a folder.</p>
-        <p class="line hint">Type <span class="accent clickable" data-cmd="prev">prev</span> to go back one directory, or <span class="accent clickable" data-cmd="help">help</span> to see everything.</p>`;
+        <p class="line hint"><span class="accent clickable" data-cmd="prev">prev</span> to go back · <span class="accent clickable" data-cmd="help">help</span> for everything</p>`;
     }
     return `<p class="line">${kids.map((k) => `<span class="accent clickable" data-cmd="cd ${esc(pathString([...cwd, k]))}">${esc(k)}/</span>`).join("  ")}</p>
-      <p class="line hint">Type a name (or click it) to open it.</p>`;
+      <p class="line hint">type a name or click it to open</p>`;
   },
   pwd:    () => `<p class="line">${esc(pathString())}</p>`,
   cd:     (args) => cd(args[0]),
@@ -274,11 +274,10 @@ function help() {
       `<div class="help-row"><span class="cmd" data-cmd="cd ~/${name}">${name}</span><span class="desc">${c.desc}</span></div>`)
     .join("");
   const where = cwd.length
-    ? `<p class="line hint" style="margin-top:1.2rem">You're in <span class="path">${esc(pathString())}</span>. These live in <span class="path">~</span>, so type <span class="accent clickable" data-cmd="prev">prev</span> to go back first (or click one to jump there).</p>`
-    : `<p class="line hint" style="margin-top:1.2rem">Type one of the above to view. For eg. <span class="accent clickable" data-cmd="about">about</span></p>`;
+    ? `<p class="line hint" style="margin-top:1.2rem">you're in <span class="path">${esc(pathString())}</span> · <span class="accent clickable" data-cmd="prev">prev</span> to go back first, or click a name to jump there</p>`
+    : `<p class="line hint" style="margin-top:1.2rem">type a name to open it, e.g. <span class="accent clickable" data-cmd="about">about</span></p>`;
   return `${rows}${where}
-    <p class="line hint">Type <span class="accent clickable" data-cmd="prev">prev</span> to go back one directory, or <span class="accent clickable" data-cmd="clear">clear</span> to clear the terminal.</p>
-    <p class="line hint">Type <span class="accent clickable" data-cmd="ls">ls</span> to see what's in the current directory, and press <span class="accent">Tab</span> to autocomplete.</p>`;
+    <p class="line hint"><span class="accent clickable" data-cmd="prev">prev</span> to go back · <span class="accent clickable" data-cmd="ls">ls</span> to look around · <span class="accent clickable" data-cmd="clear">clear</span> to reset · <span class="accent">Tab</span> to autocomplete</p>`;
 }
 
 // Tiny markup for profile text (escaped first, so it's safe):
@@ -649,7 +648,7 @@ function passion(args = []) {
   const rows = Object.entries(sections).map(([name, sec]) =>
     `<div class="help-row"><span class="cmd" data-cmd="cd ~/passion/${esc(name)}">${esc(name)}</span><span class="desc">${esc(sec.desc)}</span></div>`
   ).join("");
-  return `${rows}<p class="line hint" style="margin-top:1.2rem">Type a section to open it. For eg. <span class="accent clickable" data-cmd="${esc(Object.keys(sections)[0])}">${esc(Object.keys(sections)[0])}</span></p>`;
+  return `${rows}<p class="line hint" style="margin-top:1.2rem">type a section to open it, e.g. <span class="accent clickable" data-cmd="${esc(Object.keys(sections)[0])}">${esc(Object.keys(sections)[0])}</span></p>`;
 }
 
 function passionList() {
@@ -959,11 +958,11 @@ const FRIENDLY = {
 };
 function greet() {
   return `<p class="line">Hi there! 👋 Thanks for stopping by.</p>
-    <p class="line hint">Type <span class="accent clickable" data-cmd="help">help</span> to look around, or <span class="accent clickable" data-cmd="cd ~/about">about</span> to meet me.</p>`;
+    <p class="line hint">try <span class="accent clickable" data-cmd="help">help</span> to look around, or <span class="accent clickable" data-cmd="cd ~/about">about</span> to meet me</p>`;
 }
 function bye() {
   return `<p class="line">There's no exit here, but you can close the tab anytime. Thanks for visiting! ✦</p>
-    <p class="line hint">Or type <span class="accent clickable" data-cmd="home">home</span> to start over.</p>`;
+    <p class="line hint">or <span class="accent clickable" data-cmd="home">home</span> to start over</p>`;
 }
 
 // how many single-letter edits turn a into b (for "did you mean")
@@ -993,7 +992,7 @@ function notFound(name, here) {
     return `<p class="line"><span class="error">command not found:</span> ${esc(name)}. Did you mean <span class="accent clickable" data-cmd="${esc(cmd)}">${esc(best)}</span>?</p>`;
   }
   return `<p class="line"><span class="error">command not found:</span> ${esc(name)}</p>
-    <p class="line hint">Type <span class="accent clickable" data-cmd="help">help</span> to see what you can do, or <span class="accent clickable" data-cmd="ls">ls</span> to see what's here.</p>`;
+    <p class="line hint">try <span class="accent clickable" data-cmd="help">help</span> or <span class="accent clickable" data-cmd="ls">ls</span></p>`;
 }
 
 function notHere(key) {
@@ -1009,7 +1008,7 @@ function renderDir(segs) {
   return COMMANDS[segs[0]].run([]);
 }
 
-const NAV_HINT = `<p class="line hint nav-hint">Type <span class="accent clickable" data-cmd="prev">prev</span> to go back one directory, or <span class="accent clickable" data-cmd="clear">clear</span> to clear the terminal.</p>`;
+const NAV_HINT = `<p class="line hint nav-hint"><span class="accent clickable" data-cmd="prev">prev</span> to go back · <span class="accent clickable" data-cmd="clear">clear</span> to reset</p>`;
 
 function prev() {
   if (cwd.length === 0) return `<p class="line">Already at <span class="accent">~</span> (home). Type <span class="accent clickable" data-cmd="help">help</span> to see commands.</p>`;
@@ -1022,7 +1021,7 @@ function cd(target = "~") {
   const segs = resolvePath(t === "/" ? "~" : t);
   if (!segs) {
     return `<p class="line"><span class="error">cd: no such directory:</span> ${esc(target)}</p>
-      <p class="line hint">Type <span class="accent clickable" data-cmd="ls">ls</span> to see what's here, or <span class="accent clickable" data-cmd="help">help</span> to see everything.</p>`;
+      <p class="line hint">try <span class="accent clickable" data-cmd="ls">ls</span> to see what's here</p>`;
   }
   setCwd(segs);
   return renderDir(segs);
