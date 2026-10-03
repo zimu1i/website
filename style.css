@@ -512,3 +512,8 @@ body { flex-direction: column; }
 .map-legend { margin: -0.9rem 0 1.2rem; white-space: pre; }
 .legend-been { color: var(--yellow); }
 .legend-wish { color: var(--cyan); }
+
+/* hidden `muzi` command */
+.fact-label { color: var(--yellow); font-weight: 700; margin-right: 0.6ch; }
+
+.fact-with-image { display: flex; align-items: center; gap: 18px; }

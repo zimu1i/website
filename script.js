@@ -105,6 +105,15 @@ const PROFILE = {
       ],
     },
   ],
+  // shown one at a time by the hidden `muzi` command: things that aren't anywhere else on the site
+  funFacts: [
+    "basically fueled by americanos ☕",
+    "early bird over here 🌅 after 11:30pm my brain just... logs off",
+    "i bake a lot of banana bread and keep tweaking the recipe. still chasing the perfect loaf 🍌",
+    { text: "meet {y:Captain}, my 13 year old cat 🐱", image: "assets/figures/captain.png" },
+    "lil me wanted to be an astronaut and work at NASA 🚀",
+    "huge sweet tooth. cakes, pies, any dessert, i'm in 🍰",
+  ],
   contactIntro: "_Let's chat!_ The best way to reach me is **email**. I'm always happy to talk about ==ML==, research, or tennis.",
   contact: [
     { label: "Email",    value: "muzi.li1@uwaterloo.ca",     href: "mailto:muzi.li1@uwaterloo.ca" },
@@ -487,8 +496,9 @@ function dotLogo(canvas, img) {
   // figures are bigger than logos; tall ones (like the pointe shoes) get extra height so they keep detail
   const lg = canvas.classList.contains("figure-lg");
   const phone = window.innerWidth <= 560;
-  const targetH = lg ? (phone ? 170 : 240) : canvas.classList.contains("figure") ? (aspect < 0.8 ? 128 : 88) : 60;
-  if (small) canvas.style.width = `${Math.min(lg ? 220 : 112, targetH * aspect)}px`;
+  const factPic = canvas.classList.contains("fact-figure");
+  const targetH = lg ? (phone ? 170 : 240) : factPic ? (phone ? 150 : 200) : canvas.classList.contains("figure") ? (aspect < 0.8 ? 128 : 88) : 60;
+  if (small) canvas.style.width = `${Math.min(lg ? 220 : factPic ? 160 : 112, targetH * aspect)}px`;
   const cssW = canvas.clientWidth;
   // finer dots for the detailed sport figures, a little chunkier for logos
   const COLS = small ? Math.round(cssW / (canvas.classList.contains("figure") ? 1.8 : 2.4)) : 64;
@@ -955,7 +965,26 @@ const OPEN_WORDS = ["open", "cat", "go", "view", "show", "more", "less", "vim", 
 const FRIENDLY = {
   hi: greet, hello: greet, hey: greet, hola: greet, bonjour: greet, "你好": greet,
   exit: bye, quit: bye, logout: bye, bye: bye, q: bye, ":q": bye,
+  muzi: funFact,
 };
+
+// hidden `muzi` command: a random fun fact, cycling through all of them before repeating
+let factBag = [];
+function funFact() {
+  const facts = PROFILE.funFacts || [];
+  if (!facts.length) return `<p class="line">Muzi is still thinking of a fun fact ✦</p>`;
+  if (!factBag.length) factBag = facts.map((_, i) => i).sort(() => Math.random() - 0.5);
+  const i = factBag.pop();
+  const fact = typeof facts[i] === "string" ? { text: facts[i] } : facts[i];   // a fact can also carry a dotted picture
+  const line = `<p class="line"><span class="fact-label">✦ fun fact #${i + 1}</span> ${fmt(fact.text)}</p>`;
+  const again = `<p class="line hint">type ${'<span class="accent clickable" data-cmd="muzi">muzi</span>'} again for another</p>`;
+  if (!fact.image) return line + again;
+  requestAnimationFrame(drawSeals);
+  return `<div class="fact-with-image">
+      <canvas class="dotlogo item-logo figure fact-figure" data-src="${esc(fact.image)}" aria-hidden="true"></canvas>
+      <div>${line}${again}</div>
+    </div>`;
+}
 function greet() {
   return `<p class="line">Hi there! 👋 Thanks for stopping by.</p>
     <p class="line hint">try <span class="accent clickable" data-cmd="help">help</span> to look around, or <span class="accent clickable" data-cmd="cd ~/about">about</span> to meet me</p>`;
