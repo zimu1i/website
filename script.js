@@ -122,6 +122,23 @@ const PROFILE = {
     { label: "Location", value: "Toronto, ON, Canada",        href: "" },
     { label: "Current timezone", clock: "America/Toronto" }, // live clock in this IANA timezone
   ],
+  // blog posts, newest first. `slug` is the name you type to open it (lowercase, no spaces).
+  // `body` is a list of paragraphs and uses the same formatting marks as everywhere else.
+  blog: [
+    {
+      slug: "hello-world",
+      title: "hello, world 👋",
+      date: "Sep 27, 2026",
+      summary: "why my portfolio is a terminal",
+      body: [
+        "hi! welcome to my little corner of the internet ✦",
+        "I wanted my portfolio to feel like the place I spend most of my time: a **terminal**. So instead of clicking around a normal website, you get to type your way through it.",
+        "a few things I had fun building: the _dotted portrait_ in {p:about}, the starry sky behind this window, and a dotted ==world map== of everywhere I've been.",
+        "I'll use this blog for things that don't fit on a resume: projects I'm tinkering with, things I'm learning, and probably a banana bread update or two 🍌",
+        "thanks for stopping by!",
+      ],
+    },
+  ],
   // `passion` sections: each key is also a command (e.g. `travel` or `passion travel`)
   passion: {
     travel: {
@@ -252,6 +269,7 @@ const COMMANDS = {
   experience: { desc: "My Experience",      run: experience },
   skills:    { desc: "My Tech Skills",     run: skills },
   projects:  { desc: "My Tech Projects",   run: projects },
+  blog:      { desc: "My writing",         run: blogIndex },
   contact:   { desc: "Contact Me",         run: contact },
   passion:   { desc: "Things I love",      run: passion },
   prev:      { desc: "Go back one directory", run: prev },
@@ -661,6 +679,52 @@ function passion(args = []) {
   return `${rows}<p class="line hint" style="margin-top:1.2rem">type a section to open it, e.g. <span class="accent clickable" data-cmd="${esc(Object.keys(sections)[0])}">${esc(Object.keys(sections)[0])}</span></p>`;
 }
 
+// ---------- blog ----------
+// drafts stay hidden on the live site; open the site with ?drafts in the URL to preview them locally
+const SHOW_DRAFTS = new URLSearchParams(location.search).has("drafts");
+const blogPosts = () => (PROFILE.blog || []).filter((p) => !p.draft || SHOW_DRAFTS);
+
+function blogIndex() {
+  const posts = blogPosts();
+  if (!posts.length) return `<p class="line">No posts yet. Check back soon ✍️</p>`;
+  return posts.map((p) => `
+    <div class="post-row">
+      <span class="post-date">${esc(p.date)}</span>
+      <span class="post-title cmd clickable" data-cmd="cd ~/blog/${esc(p.slug)}">${fmt(p.title)}${p.draft ? ' <span class="draft-tag">draft</span>' : ""}</span>
+      ${p.summary ? `<span class="post-summary">${fmt(p.summary)}</span>` : ""}
+    </div>`).join("") +
+    `<p class="line hint" style="margin-top:1.2rem">type a post's name to read it, e.g. ${'<span class="accent clickable" data-cmd="cd ~/blog/' + esc(posts[0].slug) + '">' + esc(posts[0].slug) + '</span>'}</p>`;
+}
+
+// one piece of a post body: a paragraph (string), or { heading }, { image, caption }, { video, caption },
+// or { compare: [{ image|video, caption }, { image|video, caption }] } for side-by-side clips
+function postMedia(m) {
+  const media = m.video
+    ? `<video src="${esc(m.video)}" autoplay muted loop playsinline preload="metadata"></video>`
+    : `<img src="${esc(m.image)}" alt="${esc(m.caption || "")}" loading="lazy" />`;
+  return `<figure class="post-figure">${media}${m.caption ? `<figcaption>${fmt(m.caption)}</figcaption>` : ""}</figure>`;
+}
+function postBlock(block) {
+  if (typeof block === "string") return `<p class="post-para">${fmt(block)}</p>`;
+  if (block.heading) return `<h3 class="post-subheading">${fmt(block.heading)}</h3>`;
+  if (block.compare) return `<div class="post-compare">${block.compare.map(postMedia).join("")}</div>`;
+  if (block.image || block.video) return postMedia(block);
+  if (block.code) return `<pre class="post-code">${esc(block.code)}</pre>`;
+  return "";
+}
+
+// renders a post; with `check` it only says whether the post exists
+function blogPost(slug, check = false) {
+  const post = blogPosts().find((p) => p.slug === slug);
+  if (check) return !!post;
+  if (!post) return null;
+  return `<article class="post">
+      <h2 class="post-heading">${fmt(post.title)}</h2>
+      <p class="line post-meta">${esc(post.date)}${post.summary ? ` · ${fmt(post.summary)}` : ""}${post.draft ? ' <span class="draft-tag">draft</span>' : ""}</p>
+      ${post.body.map(postBlock).join("")}
+    </article>`;
+}
+
 function passionList() {
   return Object.keys(PROFILE.passion)
     .map((n) => `<span class="accent clickable" data-cmd="${esc(n)}">${esc(n)}</span>`).join(", ");
@@ -950,6 +1014,7 @@ const GLOBAL_CMDS = ["help", "clear", "prev"];
 // where a section lives, e.g. "about" -> ["about"], "travel" -> ["passion", "travel"]; null if it isn't one
 function homeOf(key) {
   if (PROFILE.passion[key]) return ["passion", key];
+  if (blogPost(key, true)) return ["blog", key];
   if (COMMANDS[key] && !NOT_DIRS.includes(key)) return [key];
   return null;
 }
@@ -1007,7 +1072,7 @@ function editDistance(a, b) {
 
 function notFound(name, here) {
   const typed = name.toLowerCase();
-  const sections = [...Object.keys(COMMANDS).filter((c) => !NOT_DIRS.includes(c)), ...Object.keys(PROFILE.passion)];
+  const sections = [...Object.keys(COMMANDS).filter((c) => !NOT_DIRS.includes(c)), ...Object.keys(PROFILE.passion), ...blogPosts().map((p) => p.slug)];
   const options = [...new Set([...here, ...GLOBAL_CMDS, "ls", "pwd", "cd", ...sections])];
   let best = null, bestD = Infinity;
   for (const o of options) {
@@ -1034,6 +1099,7 @@ function notHere(key) {
 function renderDir(segs) {
   if (segs.length === 0) return help();
   if (segs[0] === "passion") return segs[1] ? passionSection(segs[1]) : passion();
+  if (segs[0] === "blog") return segs[1] ? blogPost(segs[1]) : blogIndex();
   return COMMANDS[segs[0]].run([]);
 }
 
@@ -1088,6 +1154,7 @@ function execute(raw) {
   else if (EXTRAS[key]) html = EXTRAS[key](args);
   else if (key === "passion" && args[0] && here.includes("passion")) html = cd(`passion/${args[0]}`);   // `passion travel` shorthand
   else if (here.includes(key)) { setCwd([...cwd, key]); html = renderDir(cwd); opened = true; }
+  else if (homeOf(key) && pathString(homeOf(key)) === pathString()) { html = renderDir(cwd); opened = true; }   // already here: just show it again
   else if (homeOf(key)) html = notHere(key);   // a real section, just not in this directory
   else html = notFound(name, here);
 
@@ -1120,6 +1187,7 @@ const ghostRest = document.getElementById("ghost-rest");
 function childrenOf(segs) {
   if (segs.length === 0) return Object.keys(COMMANDS).filter((c) => !NOT_DIRS.includes(c));
   if (segs.length === 1 && segs[0] === "passion") return Object.keys(PROFILE.passion);
+  if (segs.length === 1 && segs[0] === "blog") return blogPosts().map((p) => p.slug);
   return [];
 }
 
