@@ -1158,6 +1158,10 @@ function execute(raw) {
   else if (homeOf(key)) html = notHere(key);   // a real section, just not in this directory
   else html = notFound(name, here);
 
+  // let the title-bar characters react (mascot.js); for cd, use where we ended up
+  const failed = /class="error"/.test(html || "");
+  window.dispatchEvent(new CustomEvent("terminal-command", { detail: failed ? "error" : key === "cd" ? cwd[cwd.length - 1] || "~" : key }));
+
   // every section page ends with a reminder of how to get back (home shows it in `help`)
   if (html && cwd.length > 0 && (opened || key === "prev" || key === "cd" || key === "passion") && !/class="error"/.test(html)) {
     html += NAV_HINT;
