@@ -62,47 +62,37 @@ const PROFILE = {
   projects: [
     {
       title: "Decoder-Only Transformer from Scratch",
-      meta: "JAX · Flax · Optax · Sep 2026",
+      date: "Sep 2026",
       link: "https://github.com/zimu1i/jax-transformer",
-      bullets: [
-        "Hand-derived ==multi-head causal self-attention==, positional embeddings and pre-norm residual blocks in raw jax.numpy, with _no library attention layers._",
-        "Trained a **105K-param** model, cutting loss from {y:3.34} _(chance)_ to {y:0.05} in 30 epochs; **22 unit tests** cover shapes, causal masking and gradient flow.",
-      ],
+      desc: "Hand-derived ==multi-head causal self-attention==, positional embeddings and pre-norm residual blocks in raw jax.numpy, with _no library attention layers_. Trained a **105K-param** model, cutting loss from {y:3.34} to {y:0.05} in 30 epochs, with **22 unit tests** covering shapes, masking and gradient flow.",
+      tech: ["JAX", "Flax", "Optax"],
     },
     {
       title: "Learned Denoiser for Monte Carlo Renders",
-      meta: "PyTorch · NumPy · Blender Python API · Aug 2026",
+      date: "Aug 2026",
       link: "https://github.com/zimu1i/render-denoiser",
-      bullets: [
-        "Trained a ==U-Net== that improves held-out PSNR by {y:7.85 dB}, a **6x effective compute reduction**, within 2.24 dB of a production denoiser.",
-        "Ran an ablation that _contradicted expectations_, traced it to a channel variance mismatch, and caught a baseline **gaming PSNR**.",
-      ],
+      desc: "Trained a ==U-Net== that improves held-out PSNR by {y:7.85 dB}, a **6x effective compute reduction**, within 2.24 dB of a production denoiser. An ablation that _contradicted expectations_ traced a channel variance mismatch and caught a baseline **gaming PSNR**.",
+      tech: ["PyTorch", "NumPy", "Blender API"],
     },
     {
       title: "Wimbledon 2026 Match Outcome Prediction",
-      meta: "Python · XGBoost · SHAP · DuckDB SQL · Jun 2026",
+      date: "Jun 2026",
       link: "https://github.com/zimu1i/wimbledon-winner-prediction",
-      bullets: [
-        "Scoped and built an ==end-to-end data pipeline== over **120,000 matches**, using DuckDB SQL to clean, join and validate the data before modeling, reaching {y:71.5%} accuracy and {y:0.774} AUC-ROC.",
-        "Used ==SHAP== to explain the model's decisions in _plain, non-technical_ terms.",
-      ],
+      desc: "Scoped and built an ==end-to-end data pipeline== over **120,000 matches**, using DuckDB SQL to clean, join and validate before modeling, reaching {y:71.5%} accuracy and {y:0.774} AUC-ROC. Used ==SHAP== to explain decisions in _plain, non-technical_ terms.",
+      tech: ["Python", "XGBoost", "SHAP", "DuckDB SQL"],
     },
     {
       title: "LegalMind: Hybrid Retrieval over Canadian Corporate Law",
-      meta: "Python · NumPy · PyMuPDF · OpenAI API · pytest · Jun 2026",
+      date: "Jun 2026",
       link: "https://github.com/zimu1i/legal-mind-rag",
-      bullets: [
-        "Built ==hybrid retrieval== from _first principles_ (BM25, cosine similarity, reciprocal rank fusion): hit@3 {y:0.65 → 0.96}, MRR {y:0.61 → 0.82}.",
-        "Layout analysis over a **253-page** bilingual document cut index noise by {y:49.7%}; citation auditing with **0 unsupported citations** across 244 tests.",
-      ],
+      desc: "Built ==hybrid retrieval== from _first principles_ (BM25, cosine similarity, reciprocal rank fusion): hit@3 {y:0.65 → 0.96}, MRR {y:0.61 → 0.82}. Layout analysis over a **253-page** bilingual document cut index noise by {y:49.7%}, with **0 unsupported citations** across 244 tests.",
+      tech: ["Python", "NumPy", "PyMuPDF", "OpenAI API", "pytest"],
     },
     {
       title: "QubotTalent: AI Recruiting Platform",
-      meta: "Python · FastAPI · vLLM · Playwright · Docker · SQLite · May 2026",
-      bullets: [
-        "Replaced a manual Qubot workflow eating **7 hours/day** with an ==AI-driven pipeline== processing {y:2,922} profiles per run. Owned it _end to end_, from scoping with stakeholders to shipping.",
-        "Built a ==live evaluation loop== sampling {y:15%} of outputs for human review, iterating in production instead of waiting for perfect.",
-      ],
+      date: "May 2026",
+      desc: "Replaced a manual Qubot workflow eating **7 hours/day** with an ==AI-driven pipeline== processing {y:2,922} profiles per run. Owned it _end to end_, from scoping with stakeholders to shipping, with a ==live evaluation loop== sampling {y:15%} of outputs for human review.",
+      tech: ["Python", "FastAPI", "vLLM", "Playwright", "Docker", "SQLite"],
     },
   ],
   // shown one at a time by the hidden `muzi` command: things that aren't anywhere else on the site
@@ -619,7 +609,26 @@ function dotLogo(canvas, img) {
 }
 // experience & projects are shown as a compact list (their `bullets` are kept in PROFILE but not displayed)
 function experience() { return renderItems(PROFILE.experience, { bullets: false, yellowDates: true }); }
-function projects()   { return renderItems(PROFILE.projects, { bullets: false, yellowDates: true }); }
+function projects() {
+  const cards = PROFILE.projects.map((p) => {
+    const titleHtml = p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.title)}</a>` : esc(p.title);
+    const tech = (p.tech || []).map((t) => `<span class="proj-tag">${esc(t)}</span>`).join("");
+    const links = [
+      p.link ? `<a class="proj-link" href="${esc(p.link)}" target="_blank" rel="noopener">GitHub →</a>` : "",
+      p.demo ? `<a class="proj-link" href="${esc(p.demo)}" target="_blank" rel="noopener">Live demo →</a>` : "",
+    ].join("");
+    return `<div class="project-card">
+      <div class="proj-head">
+        <h3 class="proj-title">${titleHtml}</h3>
+        ${p.date ? `<span class="proj-date">${esc(p.date)}</span>` : ""}
+      </div>
+      <p class="proj-desc">${fmt(p.desc)}</p>
+      <div class="proj-tags">${tech}</div>
+      ${links ? `<div class="proj-links">${links}</div>` : ""}
+    </div>`;
+  }).join("");
+  return `<div class="project-grid">${cards}</div>`;
+}
 
 function skills() {
   return Object.entries(PROFILE.skills).map(([group, list]) => `
