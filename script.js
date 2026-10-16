@@ -156,6 +156,9 @@ const PROFILE = {
         { name: "Nanjing",              country: "China",  lat: 32.06, lon: 118.80 },
         { name: "Yunnan",               country: "China",  lat: 25.04, lon: 102.71 }, // Kunming
         { name: "Guangzhou",            country: "China",  lat: 23.13, lon: 113.26 },
+        { name: "Xinjiang",             country: "China",  lat: 43.83, lon: 87.62 },  // Ürümqi
+        { name: "Hainan",               country: "China",  lat: 20.04, lon: 110.32 }, // Haikou
+        { name: "Sichuan",              country: "China",  lat: 30.57, lon: 104.07 }, // Chengdu
         { name: "Hong Kong",   lat: 22.32, lon: 114.17 },
         { name: "South Korea", lat: 37.57, lon: 126.98 }, // Seoul
         { name: "Japan",       lat: 35.68, lon: 139.69 }, // Tokyo
@@ -180,7 +183,7 @@ const PROFILE = {
           "**USA** (New York, Burlington, Orlando, Miami)",
         ] },
         { title: "East Asia", meta: "", bullets: [
-          "**China** (Beijing, Xi'an, {y:Shanghai}, Suzhou, Hangzhou, Nanjing, Yunnan, Guangzhou)",
+          "**China** (Beijing, Xi'an, {y:Shanghai}, Suzhou, Hangzhou, Nanjing, Yunnan, Guangzhou, Xinjiang, Hainan, Sichuan, ...)",
           "**Hong Kong**, **South Korea**, **Japan**",
         ] },
         { title: "Europe", meta: "", bullets: [

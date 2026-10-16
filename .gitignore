@@ -8,3 +8,7 @@ tools/worldmap-preview.png
 # local editor / tool settings
 .claude/
 .DS_Store
+
+# GitHub profile README (belongs in the zimu1i/zimu1i repo, not this one)
+profile-readme/
+mascot-banner.gif
