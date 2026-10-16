@@ -194,23 +194,6 @@ const PROFILE = {
         { title: "On my wishlist ✈️", meta: "", bullets: ["{c:Iceland}, {c:Norway}, {c:Italy}, {c:Türkiye}, the {c:Amazon Rainforest} and, one day, {c:Antarctica}."] },
       ],
     },
-    sports: {
-      desc: "How I stay active",
-      intro: "_Moving is how I reset._",
-      items: [
-        { title: "Tennis", meta: "", figure: "emoji:🎾", bullets: [
-          "My **favourite sport**, on the court and in the lab, where I'm teaching _simulated humanoids_ to play it at the ==VIP Lab==.",
-          "_In my bag:_ a {y:Yonex Percept 100L}.",
-        ] },
-        { title: "Dance", meta: "15 years", figure: "assets/figures/pointe-shoes.png", bullets: [
-          "Name a style and I've probably danced it: **ballet**, **modern**, **hip-hop**, **jazz**, **tap**, ==traditional Chinese dance==, **flamenco**, **K-pop**, and _plenty more._",
-        ] },
-        { title: "Hiking", meta: "", figure: "emoji:🍁", bullets: [
-          "My favourite weekend plan is climbing a mountain _(hehe)_.",
-          "Best of all in ==Canadian autumn==, when the trails glow with {y:red and gold maple leaves}.",
-        ] },
-      ],
-    },
     photography: {
       desc: "Through my lens",
       intro: "I like capturing _light_, **people**, and places. Click a photo to view it.",
@@ -226,20 +209,6 @@ const PROFILE = {
         { src: "assets/photos/black-lab.jpg",       caption: "Hello there" },
       ],
       items: [],
-    },
-    music: {
-      desc: "What's on repeat",
-      intro: "_Music is the soundtrack to everything I do._",
-      items: [
-        { title: "All-time favourite ⭐", meta: "", figure: "assets/figures/jennie-ruby.png", figureSize: "lg", bullets: [
-          "**Jennie**, now and forever.",
-          "_Favourite album:_ {y:Ruby}",
-        ] },
-        { title: "On repeat lately 🎧", meta: "",
-          tags: ["Tyla", "Justin Bieber", "Tate McRae", "Zara Larsson", "Lana Del Rey", "颜人中 (Yan Renzhong)"],
-          footnote: "_...and plenty more on shuffle._",
-          bullets: [] },
-      ],
     },
   },
 };
