@@ -61,11 +61,11 @@ const PROFILE = {
   },
   projects: [
     {
-      title: "Decoder-Only Transformer from Scratch",
+      title: "Transformer from Scratch in JAX",
       date: "Sep 2026",
       link: "https://github.com/zimu1i/jax-transformer",
-      desc: "Hand-derived ==multi-head causal self-attention==, positional embeddings and pre-norm residual blocks in raw jax.numpy, with _no library attention layers_. Trained a **105K-param** model, cutting loss from {y:3.34} to {y:0.05} in 30 epochs, with **22 unit tests** covering shapes, masking and gradient flow.",
-      tech: ["JAX", "Flax", "Optax"],
+      desc: "Built a ==Transformer from scratch== in JAX/Flax following _Attention Is All You Need_, hand-writing attention, masks and residual connections with **no library layers**. The encoder-decoder model does character-level {y:Spanish → English} translation (~**1.4M params**), validated by **22 unit tests** covering shapes, masking, causality and gradients.",
+      tech: ["JAX", "Flax", "Optax", "pytest"],
     },
     {
       title: "Learned Denoiser for Monte Carlo Renders",
