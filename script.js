@@ -216,22 +216,7 @@ const PROFILE = {
         { name: "Antarctica", wish: true, lat: -64.80, lon: -62.90 }, // Antarctic Peninsula
         { name: "Amazon Rainforest", wish: true, lat: -3.40, lon: -62.20 }, // heart of the Amazon, Brazil
       ],
-      items: [
-        { title: "North America", meta: "", bullets: [
-          "**Canada** ({y:Toronto}, Montréal, Quebec City, Vancouver, New Brunswick, Nova Scotia, Prince Edward Island)",
-          "**USA** (New York, Burlington, Orlando, Miami)",
-        ] },
-        { title: "East Asia", meta: "", bullets: [
-          "**China** (Beijing, Xi'an, {y:Shanghai}, Suzhou, Hangzhou, Nanjing, Yunnan, Guangzhou, Xinjiang, Hainan, Sichuan, ...)",
-          "**Hong Kong**, **South Korea**, **Japan**",
-        ] },
-        { title: "Europe", meta: "", bullets: [
-          "**France** (Paris, Toulouse)",
-          "**Belgium**, **the Netherlands**, **Luxembourg**, **Germany**",
-        ] },
-        { title: "Africa", meta: "", bullets: ["**Egypt**"] },
-        { title: "On my wishlist ✈️", meta: "", bullets: ["{c:Iceland}, {c:Norway}, {c:Italy}, {c:Türkiye}, the {c:Amazon Rainforest} and, one day, {c:Antarctica}."] },
-      ],
+      items: [],
     },
     photography: {
       desc: "Through my lens",
