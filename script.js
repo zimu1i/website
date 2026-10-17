@@ -35,7 +35,7 @@ const PROFILE = {
     {
       title: "Undergraduate Research Assistant",
       logo: "assets/viplab-logo.png",
-      meta: "Vision and Image Processing Lab, UWaterloo · Sep 2026 – Present",
+      meta: "[Vision and Image Processing Lab](https://vip.uwaterloo.ca) · UWaterloo · Sep 2026 – Present",
       note: "Reinforcement learning for humanoid tennis, supervised by Dr. Yuhao Chen",
       bullets: [
         "Researching ==reinforcement learning== for _humanoid sports control_ ({y:tennis}) with **Dr. Yuhao Chen**, applying simulation-based training and reward design.",
@@ -53,17 +53,12 @@ const PROFILE = {
       ],
     },
   ],
-  skills: {
-    Programming: ["==Python==", "C/C++", "SQL"],
-    "ML & Deep Learning": ["==PyTorch==", "==JAX==", "Flax", "Optax", "scikit-learn", "XGBoost", "SHAP", "U-Net / CNNs", "RL (PPO, SB3, Gymnasium)"],
-    "LLMs & Retrieval": ["==RAG==", "BM25 / dense retrieval", "Embeddings", "Prompt engineering", "Structured outputs", "LLM evaluation"],
-    "Systems & Tools": ["FastAPI", "REST APIs", "Docker", "vLLM", "Playwright", "SQLite", "==DuckDB==", "pandas", "NumPy", "Git", "Linux", "bash", "pytest"],
-  },
   projects: [
     {
       title: "Transformer from Scratch in JAX",
       date: "Sep 2026",
       link: "https://github.com/zimu1i/jax-transformer",
+      image: "assets/projects/jax-transformer.svg",
       desc: "Built a ==Transformer from scratch== in JAX/Flax following _Attention Is All You Need_, hand-writing attention, masks and residual connections with **no library layers**. The encoder-decoder model does character-level {y:Spanish → English} translation (~**1.4M params**), validated by **22 unit tests** covering shapes, masking, causality and gradients.",
       tech: ["JAX", "Flax", "Optax", "pytest"],
     },
@@ -71,6 +66,7 @@ const PROFILE = {
       title: "Learned Denoiser for Monte Carlo Renders",
       date: "Aug 2026",
       link: "https://github.com/zimu1i/render-denoiser",
+      image: "assets/projects/render-denoiser.png",
       desc: "Trained a ==U-Net== that improves held-out PSNR by {y:7.85 dB}, a **6x effective compute reduction**, within 2.24 dB of a production denoiser. An ablation that _contradicted expectations_ traced a channel variance mismatch and caught a baseline **gaming PSNR**.",
       tech: ["PyTorch", "NumPy", "Blender API"],
     },
@@ -78,6 +74,7 @@ const PROFILE = {
       title: "Wimbledon 2026 Match Outcome Prediction",
       date: "Jun 2026",
       link: "https://github.com/zimu1i/wimbledon-winner-prediction",
+      image: "assets/projects/wimbledon.jpg",
       desc: "Scoped and built an ==end-to-end data pipeline== over **120,000 matches**, using DuckDB SQL to clean, join and validate before modeling, reaching {y:71.5%} accuracy and {y:0.774} AUC-ROC. Used ==SHAP== to explain decisions in _plain, non-technical_ terms.",
       tech: ["Python", "XGBoost", "SHAP", "DuckDB SQL"],
     },
@@ -85,11 +82,13 @@ const PROFILE = {
       title: "LegalMind: Hybrid Retrieval over Canadian Corporate Law",
       date: "Jun 2026",
       link: "https://github.com/zimu1i/legal-mind-rag",
+      image: "assets/projects/legal-mind-rag.png",
       desc: "Built ==hybrid retrieval== from _first principles_ (BM25, cosine similarity, reciprocal rank fusion): hit@3 {y:0.65 → 0.96}, MRR {y:0.61 → 0.82}. Layout analysis over a **253-page** bilingual document cut index noise by {y:49.7%}, with **0 unsupported citations** across 244 tests.",
       tech: ["Python", "NumPy", "PyMuPDF", "OpenAI API", "pytest"],
     },
     {
       title: "QubotTalent: AI Recruiting Platform",
+      image: "assets/projects/qubottalent.png",
       date: "May 2026",
       desc: "Replaced a manual Qubot workflow eating **7 hours/day** with an ==AI-driven pipeline== processing {y:2,922} profiles per run. Owned it _end to end_, from scoping with stakeholders to shipping, with a ==live evaluation loop== sampling {y:15%} of outputs for human review.",
       tech: ["Python", "FastAPI", "vLLM", "Playwright", "Docker", "SQLite"],
@@ -115,6 +114,46 @@ const PROFILE = {
   // blog posts, newest first. `slug` is the name you type to open it (lowercase, no spaces).
   // `body` is a list of paragraphs and uses the same formatting marks as everywhere else.
   blog: [
+    {
+      slug: "jax-transformer",
+      title: "I built a Transformer from scratch in JAX, and my loss curve lied to me",
+      date: "Oct 17, 2026",
+      summary: "building attention by hand, and the day my loss curve fooled me",
+      body: [
+        "I wanted to really understand Transformers, not just import one. So I spent a few weeks building a decoder-only model and a full encoder-decoder translation model from scratch in JAX and Flax, with no pre-built attention layers. Every matrix multiply, every mask, every residual connection is hand-written in raw `jax.numpy`.",
+        "The goal was to be able to derive each piece on a whiteboard. I got that. But the more interesting part turned out to be everything that happened _after_ the model technically worked: the translations were bad, and figuring out why taught me more than the implementation did.",
+        "This is a writeup of what I built, the moment my evaluation metric fooled me, and what the failures actually came from.",
+        { heading: "What I built" },
+        "The architecture follows the original _Attention Is All You Need_ paper. The core is scaled dot-product attention:",
+        { code: "Attention(Q, K, V) = softmax(QK^T / sqrt(d_k)) V" },
+        "On top of that I built ==multi-head attention== (self, cross, and causal variants), pre-norm residual blocks, position-wise feed-forward networks with GELU, token and learned positional embeddings, and weight tying between the target embeddings and the output projection. The encoder reads the full source sentence bidirectionally; the decoder generates one token at a time using causal self-attention and cross-attention into the encoder output.",
+        "I wrapped it in Flax `nn.Module` classes, trained it with Adam from Optax, and used `jax.value_and_grad` with JIT-compiled train steps. To keep things simple I used a character-level tokenizer and trained on Spanish-to-English pairs from the Tatoeba corpus. I also wrote **22 unit tests** covering attention shapes, causal-mask correctness, layer-norm statistics, end-to-end causality, and gradient flow.",
+        "By the end, a small model (about **1.4M parameters**, trained on CPU) ran end to end: feed it a Spanish sentence, get English back.",
+        { heading: "The model \"worked,\" and the output was bad" },
+        "Here is roughly what it produced on sentences it had never seen:",
+        { code: "es: mi casa              -> en: my house\nes: no me gusta este...  -> en: i don't like this ...\nes: mi amigo.            -> en: my friend with\nes: mi madre.            -> en: mom mother loves\nes: hola                 -> en: it doown" },
+        "Some of it is genuinely right. A lot of it is structurally plausible but wrong, with invented words like \"friendshation\" showing up on longer inputs. My first instinct was the usual one: train longer, make the model bigger. But before doing that, I went back to look at my training signal, and that is where the real lesson was.",
+        { heading: "My loss curve was lying to me" },
+        "My loss was dropping nicely, from about {y:3.9} down to {y:0.48}. That looked like a model learning well. It wasn't the whole story.",
+        "Every sentence in a batch gets padded to a fixed length so the arrays line up. A short sentence like \"hi\" becomes something like `[<bos>, h, i, <eos>, <pad>, <pad>, ...]`. My cross-entropy loss averaged over _every_ position, including all those padding tokens.",
+        "The problem is that padding is trivially easy to predict. Once the model learns \"after `<eos>`, everything is `<pad>`,\" it scores near-perfectly on most of the positions in every sequence. Those easy positions dominated the average and dragged the number down. My loss looked great partly because it was measuring how well the model predicted **padding**, which is not a skill anyone cares about.",
+        "The fix was a ==masked loss== that only counts real tokens:",
+        { code: "def masked_cross_entropy(logits, targets, pad_id=0):\n    vocab_size = logits.shape[-1]\n    one_hot = jax.nn.one_hot(targets, vocab_size)\n    log_probs = jax.nn.log_softmax(logits, axis=-1)\n    per_token_loss = -jnp.sum(log_probs * one_hot, axis=-1)\n\n    mask = (targets != pad_id).astype(jnp.float32)\n    return jnp.sum(per_token_loss * mask) / jnp.sum(mask)" },
+        "Instead of averaging over all positions, I multiply the per-position loss by a mask that is 1 for real tokens and 0 for padding, then divide by the number of real tokens. After this change the reported loss went _up_, not down, and that was the point. The higher number was the honest one. The gradient signal now concentrates on content instead of being diluted by padding.",
+        "The takeaway stuck with me: _a metric moving in the right direction is not proof that it measures the right thing._ I had to go look at what the number was actually made of.",
+        { heading: "Where the real quality ceiling came from" },
+        "Even with an honest loss, the translations stayed mediocre. So I did a proper failure analysis instead of assuming it was a bug. Three causes, none of them a code defect:",
+        "**Character-level tokenization is the main bottleneck.** By spelling one character at a time, the model has to learn three hard things at once: how to spell English words, which Spanish word maps to which English word, and word order. That is why it invents words like \"friendshation.\" Every production translation system avoids this by using subword tokens, so the model rearranges chunks instead of spelling from scratch.",
+        "**Short fragments are out of distribution.** Almost every training pair is a full sentence ending in punctuation. A bare word like \"hola\" or \"amigo\" looks nothing like the training data, so the model does worse on it. \"mi casa\" gives \"my house,\" but single tokens fall apart. The model isn't broken on those inputs, it has just never seen anything like them.",
+        "**It is deliberately tiny.** 1.4 million parameters on CPU, trained on a fraction of the data for a few minutes, is orders of magnitude smaller than real neural machine translation. Some of the gap is just scale.",
+        "I wrote all of this into the project's README as a limitations section, with each failure mapped to its cause and a prioritized list of fixes. ==Subword tokenization== is first, because it removes the spelling problem entirely.",
+        { heading: "What I actually learned" },
+        "The implementation taught me the mechanics: how Q, K, and V interact, why you scale by the square root of the head dimension, how causal masking enforces autoregression, how cross-attention bridges the encoder and decoder. That was the point when I started, and I got it.",
+        "But the part I did not expect to learn was about **evaluation**. Building the model is a well-defined problem with a right answer. Trusting your numbers is not. My loss curve looked healthy while quietly measuring the wrong thing, and _no test would have caught it_, because the code was correct. The only thing that caught it was stopping to ask what the metric was averaging over.",
+        "That is the habit I am taking from this project: separate _is my code correct_ from _is my model good_, and never let a nice-looking curve stand in for actually reading the output. The architecture was the assignment. Learning to distrust a loss curve was the lesson.",
+        "The full code, tests, diagrams, and limitations writeup are {c:on GitHub}.",
+      ],
+    },
     {
       slug: "hello-world",
       title: "hello, world 👋",
@@ -229,7 +268,6 @@ const COMMANDS = {
   about:     { desc: "About Me",           run: about },
   education:  { desc: "My Education",       run: education },
   experience: { desc: "My Experience",      run: experience },
-  skills:    { desc: "My Tech Skills",     run: skills },
   projects:  { desc: "My Tech Projects",   run: projects },
   blog:      { desc: "My writing",         run: blogIndex },
   contact:   { desc: "Contact Me",         run: contact },
@@ -272,11 +310,16 @@ function help() {
 // Tiny markup for profile text (escaped first, so it's safe):
 // **bold**  ==highlight==  _serif italic_  {y:yellow}  {p:purple}  {c:cyan}
 function fmt(text) {
-  return esc(text)
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="kw-bold">$1</strong>')
-    .replace(/==(.+?)==/g, '<mark class="kw-mark">$1</mark>')
-    .replace(/(^|[\s(])_(.+?)_(?=[\s).,!?]|$)/g, '$1<em class="kw-serif">$2</em>')
-    .replace(/\{([ypc]):(.+?)\}/g, (_, c, t) => `<span class="kw-${c}">${t}</span>`);
+  // split out `inline code` so its contents aren't touched by the other marks, then format the rest
+  return esc(text).split(/(`[^`]+`)/).map((part) => {
+    if (part.startsWith("`") && part.endsWith("`")) return `<code class="inline-code">${part.slice(1, -1)}</code>`;
+    return part
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="kw-bold">$1</strong>')
+      .replace(/==(.+?)==/g, '<mark class="kw-mark">$1</mark>')
+      .replace(/(^|[\s(])_(.+?)_(?=[\s).,!?]|$)/g, '$1<em class="kw-serif">$2</em>')
+      .replace(/\{([ypc]):(.+?)\}/g, (_, c, t) => `<span class="kw-${c}">${t}</span>`);
+  }).join("");
 }
 
 function about() {
@@ -590,6 +633,7 @@ function projects() {
       p.demo ? `<a class="proj-link" href="${esc(p.demo)}" target="_blank" rel="noopener">Live demo →</a>` : "",
     ].join("");
     return `<div class="project-card">
+      ${p.image ? `<div class="proj-banner${p.image.endsWith(".svg") ? " proj-banner-fit" : ""}"><img src="${esc(p.image)}" alt="${esc(p.title)} preview" loading="lazy" /></div>` : ""}
       <div class="proj-head">
         <h3 class="proj-title">${titleHtml}</h3>
         ${p.date ? `<span class="proj-date">${esc(p.date)}</span>` : ""}
@@ -600,18 +644,6 @@ function projects() {
     </div>`;
   }).join("");
   return `<div class="project-grid">${cards}</div>`;
-}
-
-function skills() {
-  return Object.entries(PROFILE.skills).map(([group, list]) => `
-    <div class="item">
-      <div class="heading">${esc(group)}</div>
-      <div class="tags">${list.map((s) => {
-        // ==Skill== marks a key skill: shown as a highlighted chip
-        const key = /^==(.+)==$/.exec(s);
-        return `<span class="tag${key ? " tag-key" : ""}">${fmt(key ? key[1] : s)}</span>`;
-      }).join("")}</div>
-    </div>`).join("");
 }
 
 function contact() {
