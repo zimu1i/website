@@ -44,7 +44,7 @@ const PROFILE = {
     {
       title: "AI Algorithm Engineer Intern",
       logo: "assets/qubot-logo.png",
-      meta: "Qubot Technology · Shanghai · May 2026 – Aug 2026",
+      meta: "[Qubot Technology](https://qubot.com) · Shanghai · May 2026 – Aug 2026",
       note: "Physics simulation and reinforcement learning",
       bullets: [
         "Framed autonomous instrument navigation as an ==RL problem== in a custom Gymnasium env, training **PPO agents** (PyTorch, Stable-Baselines3) in {p:NVIDIA Isaac Sim}.",
