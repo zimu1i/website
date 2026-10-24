@@ -7,73 +7,126 @@
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ---------- pixel art (one character per pixel; "." is transparent) ----------
+  // Muzi is a 25x41 minipix (tools/muzi-chibi.png, made with avatarsinpixels.com); Captain is hand-drawn.
+  // Muzi's art stays as-is: her moves come from hops and tilts (see place()), plus a closed-eyes frame.
   const PALETTE = {
-    H: "#3a2d4f", h: "#5b4878",            // hair + highlight
-    S: "#f6d3bd", E: "#1b1426", B: "#f7768e", // skin, eyes, blush
-    T: "#bb9af7", t: "#9d7cd8",            // lavender top + shade
-    P: "#4b4387", F: "#fff3a3",            // pants, yellow shoes
-    W: "#f3ead8", O: "#efb27c", K: "#1b1426", N: "#f7a1b0", // cat: cream, orange, eyes, nose
+    a: "#000000", b: "#915731", c: "#f5bb95", d: "#0d0000", e: "#2b1a0c", f: "#120038", g: "#ffd9b3", h: "#76539c", i: "#49382a", j: "#9471ba", k: "#494c96", l: "#8f92dc", m: "#adb0fa", n: "#cbceff", o: "#d79d77", p: "#592c05", q: "#58357e", r: "#ffffff", s: "#675648", t: "#8a8a8a", u: "#eeeeee", v: "#c0c0c0", w: "#fff7d1", x: "#d0d0d0",
+    // Captain: outline, cream + shade, orange + shade, pink ears/blush, eye shine, nose
+    K: "#1a1020", W: "#f3ead8", V: "#cdbfa6", O: "#efb27c", Q: "#c9844f", I: "#f7a1b0", H: "#ffffff", N: "#f7768e",
   };
-  const HEAD = [
-    "...HHHHHH...",
-    "..HHhhHHHH..",
-    ".HHHHHHHHHH.",
-    ".HSSSSSSSSH.",
-    ".HSESSSSESH.",
-    ".HSBSSSSBSH.",
-    ".HHSSSSSSHH.",
-    ".HH..SS..HH.",
+  const STAND = [
+    "........aaaaaaaaa........",
+    "......aadeeedeeedaa......",
+    ".....adeiiieeeiieeda.....",
+    "....adesiedieidisieda....",
+    "...adesiedaaeaadisieda...",
+    "...aeiieaaaaaaaaaeiiea...",
+    "..adeieagcgcgcgcgaeieda..",
+    "..adieaccgcgcgcgccaeida..",
+    "..adiaccgcgcgcgcgccaida..",
+    "..adeacbbbcgcgcbbbccada..",
+    "..adacbcccbcccbcccbcada..",
+    "..abaccaaacccccaaaccaba..",
+    "..bobbavaracccaravabbob..",
+    "..bcbcarpaacccaapracbcb..",
+    "..bcbbarppbgcgbpprabbcb..",
+    "..abbobbrppgggpprbbobba..",
+    "..adbocgwgggggggwgcobda..",
+    "..aedbocgggbbbggccobdea..",
+    "..aeddbbccgbrbgccbbddea..",
+    ".aeededdbbococobbddedeea.",
+    ".aideeddddbbbbbddddeedia.",
+    "aiedeeddfqhhqhhqfddeedeia",
+    "aideeddbqhhlmlhhqbddeedia",
+    "aedeeddbfhhhqhhhfbddeedea",
+    "aeaeedbgqhjlmljhqgbdeeaea",
+    "aeadedbgfhjhqhjhfgbdedaea",
+    ".a.aebccfhjlmljhfccbea.a.",
+    ".a.adbgfhjjhqhjjhfgbda.a.",
+    "....abgfhjjlmljjhfgba....",
+    "....bcgfhjjhfhjjhfgcb....",
+    "....bckfhjjflfjjhfkcb....",
+    "....bokfffffnfffffkob....",
+    ".....bkmknlmnmlnkmkb.....",
+    ".....kmllnlmnmlnllmk.....",
+    ".....kmkmnlnnnlnmkmk.....",
+    "......kkmnlnnnlnmkk......",
+    "........kkkkkkkkk........",
+    ".......tuuxt.txuut.......",
+    "......ffffff.ffffff......",
+    "......fjjjhf.fhjjjf......",
+    "......ffffff.ffffff......",
   ];
-  const BLINK = HEAD.slice(0, 4).concat([".HSSSSSSSSH."], HEAD.slice(5));
-  const SLEEPY = HEAD.slice(0, 4).concat([".HSEESSEESH."], HEAD.slice(5));
-  const BODY = [".HTTTTTTTTH.", ".HTtTTTTtTH.", "..STTTTTTS..", "...TTTTTT..."];
-  const ARM_UP = [".HTTTTTTTTHS", ".HTtTTTTtTH.", "..STTTTTT...", "...TTTTTT..."];
-  const ARM_UP2 = [".HTTTTTTTTH.", ".HTtTTTTtTH.", "..STTTTTT...", "...TTTTTT..."];
-  const LEGS_A = ["...PP..PP...", "..PP....PP..", ".FFF....FFF.", "............"];
-  const LEGS_B = ["....PPPP....", "....PPPP....", "...FFFFFF...", "............"];
-  const LEGS_SIT = [".PPPPPPPPPP.", ".FF......FF.", "............", "............"];
-  const wave1 = HEAD.slice(0, 6).concat([".HHSSSSSSHHS", ".HH..SS..HHS"]);
-  const MUZI = {
-    stand: [...HEAD, ...BODY, ...LEGS_B],
-    blink: [...BLINK, ...BODY, ...LEGS_B],
-    walkA: [...HEAD, ...BODY, ...LEGS_A],
-    walkB: [...HEAD, ...BODY, ...LEGS_B],
-    wave1: [...wave1, ...ARM_UP, ...LEGS_B],
-    wave2: [...HEAD, ...ARM_UP2.map((r, i) => (i === 0 ? ".HTTTTTTTTHS" : r)), ...LEGS_B],
-    danceA: [...wave1, ...ARM_UP, ...LEGS_A],
-    danceB: [...HEAD, ...BODY, ...LEGS_B],
-    sit: [...SLEEPY, ...BODY, ...LEGS_SIT],
-  };
+  // closed eyes: paint both eyes over with skin, then draw a lash line
+  const CLOSED = STAND.map((row, y) => {
+    if (y < 11 || y > 15) return row;
+    const r = [...row];
+    for (const [x0, x1] of [[6, 10], [14, 18]]) {
+      for (let x = x0; x <= x1; x++) r[x] = "c";
+      if (y === 14) for (let x = x0 + 1; x < x1; x++) r[x] = "a";
+      if (y === 13) r[x0] = r[x1] = "a";
+    }
+    return r.join("");
+  });
+  const MUZI = { stand: STAND, blink: CLOSED, sit: CLOSED };
+  const MUZI_W = STAND[0].length;
   const CAT = {
     walkA: [
-      "........O..O",
-      "........OWWO",
-      "O.......WKWK",
-      "OO.....WWWNW",
-      ".OWWWWWWWWW.",
-      "..WOOWWWOWW.",
-      "..WWWWWWWWW.",
-      "..W.W..W.W..",
+      "...............K......K...",
+      "..............KOK....KOK..",
+      "..KK..........KOIK..KIOK..",
+      ".KOQK........KOOOOKKOOOOK.",
+      ".KOK.........KOOOOOOOOOOK.",
+      ".KOK.........KWHKWWWWHKWK.",
+      "..KOK........KWKKWWWWKKWK.",
+      "..KOK........KWKKWNNWKKWK.",
+      "...KOKKKKKKKKKIWWWKKWWWIK.",
+      "...KOOQQOOWWWOOKWWWWWWWK..",
+      "...KOOQOOWWWWWOOKKKKKKK...",
+      "...KWOOWWWWWWWWWWWWWVK....",
+      "...KVWWWWWWWWWWWWWWVVK....",
+      "...KVVKVVKVVVVVKVVKVK.....",
+      "...KWK.KWWK...KWK.KWWK....",
+      "..KWWK..KWWK.KWWK..KWWK...",
+      "..KKKK..KKKK.KKKK..KKKK...",
     ],
     walkB: [
-      "........O..O",
-      "........OWWO",
-      ".O......WKWK",
-      ".O.....WWWNW",
-      ".OWWWWWWWWW.",
-      "..WOOWWWOWW.",
-      "..WWWWWWWWW.",
-      "...W.W.W.W..",
+      "...............K......K...",
+      "..............KOK....KOK..",
+      "...KK.........KOIK..KIOK..",
+      "..KOQK.......KOOOOKKOOOOK.",
+      "..KOK........KOOOOOOOOOOK.",
+      "..KOK........KWHKWWWWHKWK.",
+      "..KOK........KWKKWWWWKKWK.",
+      "..KOK........KWKKWNNWKKWK.",
+      "...KOKKKKKKKKKIWWWKKWWWIK.",
+      "...KOOQQOOWWWOOKWWWWWWWK..",
+      "...KOOQOOWWWWWOOKKKKKKK...",
+      "...KWOOWWWWWWWWWWWWWVK....",
+      "...KVWWWWWWWWWWWWWWVVK....",
+      "...KVVVVVVVVVVVVVVVVVK....",
+      "....KWK.KWK...KWK.KWK.....",
+      "....KWK.KWK...KWK.KWK.....",
+      "....KKK.KKK...KKK.KKK.....",
     ],
     sit: [
-      "............",
-      "........O..O",
-      "........OWWO",
-      "........WKWK",
-      "OO.....WWWNW",
-      ".OWWWWWWWWW.",
-      "..WOOWWWOWWW",
-      "..WWWWWWWWWW",
+      "........K......K....",
+      ".......KOK....KOK...",
+      ".......KOIK..KIOK...",
+      "......KOOOOKKOOOOK..",
+      "......KOOOOOOOOOOK..",
+      "......KWHKWWWWHKWK..",
+      "......KWKKWWWWKKWK..",
+      "......KWKKWNNWKKWK..",
+      "......KIWWWKKWWWIK..",
+      ".......KOWWWWWWOK...",
+      "......KOOWWWWWWOOK..",
+      "......KOOWWWWWWOOK..",
+      ".....KOOOWWWWWWOOOK.",
+      "KK...KQOOWWWWWWOOQK.",
+      "KOK..KQOWWKWWKWWOQK.",
+      ".KOOKKVWWWKWWKWWWVK.",
+      "..KKKKKKKKKKKKKKKKK.",
     ],
   };
 
@@ -118,22 +171,22 @@
     sprite.bubbleUntil = performance.now() + ms;
   }
 
-  function place(sprite, lift = 0) {
+  function place(sprite, lift = 0, tilt = 0) {
     sprite.el.style.transform = `translate(${sprite.x}px, ${-lift}px)`;
-    sprite.canvas.style.transform = `scaleX(${sprite.dir})`;
+    sprite.canvas.style.transform = `scaleX(${sprite.dir}) rotate(${tilt}deg)`;
   }
 
   // walkable strip: from just after the traffic-light dots to the right edge
   let minX = 0, maxX = 0;
   function measure() {
     const phone = window.innerWidth <= 560;
-    muzi.scale = phone ? 2 : 2.5;
-    cat.scale = phone ? 1.6 : 2;
+    muzi.scale = 1;                     // the chibi is already detailed: one sprite pixel per CSS pixel
+    cat.scale = 1;
     muzi.frame = cat.frame = null;
     const dots = bar.querySelector(".dots");
     const barBox = bar.getBoundingClientRect();
     minX = dots ? dots.getBoundingClientRect().right - barBox.left + 14 : 80;
-    maxX = barBox.width - 12 * muzi.scale - 16;
+    maxX = barBox.width - MUZI_W * muzi.scale - 16;
     muzi.x = Math.min(Math.max(muzi.x || (minX + maxX) / 2, minX), maxX);
     cat.x = Math.min(Math.max(cat.x || muzi.x - 40, minX), maxX);
   }
@@ -191,7 +244,7 @@
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     const tick = Math.floor(now / 180) % 2;           // shared 2-frame rhythm
-    let lift = 0;
+    let lift = 0, tilt = 0;
 
     if (now > task.until && task.kind !== "walk") nextTask(now);
     switch (task.kind) {
@@ -200,21 +253,21 @@
         if (Math.abs(d) < 1 || now > task.until) { task = { kind: "idle", until: now + rand(800, 2500) }; draw(muzi, "stand"); break; }
         muzi.dir = Math.sign(d);
         muzi.x += muzi.dir * Math.min(Math.abs(d), 34 * dt);
-        draw(muzi, tick ? "walkA" : "walkB");
+        draw(muzi, "stand"); lift = tick ? 2 : 0;          // little hop-steps
         break;
       }
-      case "wave": draw(muzi, tick ? "wave1" : "wave2"); break;
-      case "dance": draw(muzi, tick ? "danceA" : "danceB"); lift = tick ? 2 : 0; break;
-      case "tennis": draw(muzi, Math.floor(now / 260) % 2 ? "wave1" : "stand"); break;
-      case "coffee": draw(muzi, Math.floor(now / 900) % 2 ? "wave2" : "stand"); break;
-      case "sleep": draw(muzi, "sit"); break;
+      case "wave": draw(muzi, "stand"); tilt = tick ? 7 : -7; break;
+      case "dance": draw(muzi, tick ? "blink" : "stand"); lift = tick ? 3 : 0; tilt = tick ? -9 : 9; break;
+      case "tennis": draw(muzi, "stand"); lift = Math.abs(Math.sin(now / 160)) * 5; break;
+      case "coffee": draw(muzi, Math.floor(now / 900) % 2 ? "blink" : "stand"); tilt = Math.sin(now / 450) * 3; break;
+      case "sleep": draw(muzi, "sit"); tilt = 6; break;
       default: draw(muzi, now % 3200 < 140 ? "blink" : "stand");
     }
     if (now < hopUntil) lift = Math.sin(((hopUntil - now) / 450) * Math.PI) * 8;
-    place(muzi, lift);
+    place(muzi, lift, tilt);
 
     // Captain trails a little behind Muzi, and sits when she's busy or asleep
-    const gap = 12 * muzi.scale + 4;
+    const gap = MUZI_W * muzi.scale + 4;
     let catTarget = muzi.x - muzi.dir * gap;                      // behind her...
     if (catTarget < minX || catTarget > maxX) catTarget = muzi.x + muzi.dir * gap;   // ...or in front if there's no room
     catTarget = Math.min(Math.max(catTarget, minX), maxX);
@@ -235,7 +288,7 @@
 
   if (reduced) {
     // still life: Muzi standing with Captain sitting beside her
-    draw(muzi, "stand"); draw(cat, "sit"); place(muzi); cat.x = muzi.x - 12 * muzi.scale - 4; place(cat);
+    draw(muzi, "stand"); draw(cat, "sit"); place(muzi); cat.x = muzi.x - MUZI_W * muzi.scale - 4; place(cat);
     muzi.el.addEventListener("click", () => say(muzi, "hi! 👋"));
     setInterval(() => { for (const s of [muzi, cat]) if (performance.now() > s.bubbleUntil) s.bubble.classList.remove("show"); }, 500);
   } else {
